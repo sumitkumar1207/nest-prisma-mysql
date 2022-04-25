@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Post, Query } from '@nestjs/common';
 import { CoursesService } from './courses.service';
 
 @Controller('courses')
@@ -6,8 +6,9 @@ export class CoursesController {
   constructor(private courseService: CoursesService) { }
   // GET courses
   @Get()
-  async getCourses() {
-    return await this.courseService.getCourses()
+  async getCourses(@Query() query) {
+    const { skip = 0, take = 5 } = query
+    return await this.courseService.getCourses(Number(skip), Number(take))
   }
   // Get course by id
   @Get(':id')
@@ -16,7 +17,9 @@ export class CoursesController {
   }
   // Add course
   @Post()
-  async addCourse(@Body() createCourseDto: {}) {
+  @HttpCode(201)
+  async addCourse(@Body() createCourseDto) {
+    // : { title: string, description: string, author: string, url: string }
     return await this.courseService.addCourse(createCourseDto)
   }
   // Remove the course
