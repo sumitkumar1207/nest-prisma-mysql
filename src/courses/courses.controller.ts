@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query } from '@nestjs/common';
 import { Course } from '@prisma/client';
 import { CoursesService } from './courses.service';
 
@@ -14,7 +14,11 @@ export class CoursesController {
   // Get course by id
   @Get(':id')
   async getCourse(@Param('id') id): Promise<Course> {
-    return await this.courseService.getCourse(id)
+    const course = await this.courseService.getCourse(id)
+    if (!course) {
+      throw new HttpException("No record found with requested data", HttpStatus.BAD_REQUEST)
+    }
+    return course
   }
   // Add course
   @Post()
@@ -31,11 +35,15 @@ export class CoursesController {
   }
   // Update the course info
   @Put(":id")
-  async updateCourse(@Param() params, @Body() updateCourseDTO): Promise<Course> {
-    const { id } = params
-    return await this.courseService.updateCourse({
-      where: { id: Number(id) },
-      data: updateCourseDTO
-    })
+  async updateCourse(@Param() id, @Body() updateCourseDTO): Promise<Course> {
+    // const { id } = params
+    try {
+      return await this.courseService.updateCourse({
+        where: { id: Number(id) },
+        data: updateCourseDTO
+      })
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 }
