@@ -7,10 +7,8 @@ export class CoursesService {
   constructor(private dbService: DBService) { }
 
   // Get the courses
-  async getCourses(): Promise<any> {
-    return new Promise(resolve => {
-      resolve("Get courses from the service file function...")
-    })
+  async getCourses(skip: number, take: number): Promise<Course[] | []> {
+    return await this.dbService.course.findMany({ skip, take })
   }
 
   // Get the course
@@ -20,16 +18,17 @@ export class CoursesService {
     return this.dbService.course.findUnique({ where: { id: courseId } })
   }
   // Add the course
-  addCourse(course: any): Promise<any> {
-    return new Promise(resolve => {
-      resolve("Add course from the service file function..." + JSON.stringify(course))
-    })
+  async addCourse(course: Prisma.CourseCreateInput): Promise<Course> {
+    return await this.dbService.course.create({ data: course })
   }
   // Delete the course
-  deleteCourse(id: string): Promise<any> {
-    return new Promise(resolve => {
-      resolve("Delete course from the service file function..." + Number(id))
-    })
+  async deleteCourse(id: Prisma.CourseWhereUniqueInput): Promise<Course | null> {
+    const courseId = Number(id)
+    return await this.dbService.course.delete({ where: { id: courseId } })
   }
-
+  // Update the course 
+  async updateCourse(params: { where: Prisma.CourseWhereUniqueInput, data: Prisma.CourseUpdateInput }): Promise<Course> {
+    const { where, data } = params
+    return await this.dbService.course.update({ data, where })
+  }
 }
